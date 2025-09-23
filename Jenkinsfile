@@ -1,25 +1,17 @@
 pipeline {
     agent any
 
-    environment {
-        NODE_VERSION = '18'
+    tools {
+        nodejs "node18" // Ensure 'node18' matches the name configured in Jenkins global tool configuration
     }
 
     stages {
-        stage('Install Node.js') {
+        stage('Check Node.js') {
             steps {
-                script {
-                    // Install Node.js using nvm if available, else use system node
-                    sh '''
-                        if command -v nvm > /dev/null; then
-                            . ~/.nvm/nvm.sh
-                            nvm install $NODE_VERSION
-                            nvm use $NODE_VERSION
-                        fi
-                        node -v
-                        npm -v
-                    '''
-                }
+                sh '''
+                    node -v
+                    npm -v
+                '''
             }
         }
         stage('Install Dependencies') {
