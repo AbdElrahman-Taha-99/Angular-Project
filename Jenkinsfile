@@ -19,5 +19,15 @@ pipeline {
                 sh 'npm ci'
             }
         }
+        stage('Lint') {
+            steps {
+                sh '''
+                npm run lint
+                npm run lint:fix
+                npm run format
+                '''
+            }
+        }
+
     }
 }
