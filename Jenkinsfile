@@ -28,6 +28,11 @@ pipeline {
                 '''
             }
         }
+        stage('Run Tests') {
+            steps {
+                sh 'npm test --watch=false --browsers=ChromeHeadlessCI'
+            }
+        }
 
     }
 }
