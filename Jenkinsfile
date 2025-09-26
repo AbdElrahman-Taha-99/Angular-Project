@@ -6,6 +6,13 @@ pipeline {
         }
     }
 
+    stages {
+        stage('Cleanup') {
+            steps {
+                cleanWs()
+            }
+        }
+
     // tools {
     //     nodejs "node18" // Ensure 'node18' matches the name configured in Jenkins global tool configuration
     // }

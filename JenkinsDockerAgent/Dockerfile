@@ -1,13 +1,14 @@
 # Start from official Node.js 18 image
-FROM node:18-slim
+FROM node:20-alpine
 
 # Install Chromium (headless browser for Angular/Karma tests)
-RUN apt-get update && apt-get install -y chromium && rm -rf /var/lib/apt/lists/*
+RUN apk add --no-cache chromium nss freetype freetype-dev harfbuzz ttf-freefont
 
 # Set environment variable so Karma knows where Chromium is
-ENV CHROME_BIN=/usr/bin/chromium
+ENV CHROME_BIN=/usr/bin/chromium-browser
 
 # Install Angular CLI globally
+RUN npm install -g npm@latest
 RUN npm install -g @angular/cli
 
 # Set working directory
