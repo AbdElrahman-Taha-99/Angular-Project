@@ -4,11 +4,6 @@ pipeline {
         nodejs "node18" // Ensure 'node18' matches the name configured in Jenkins global tool configuration
     }
     stages {
-        stage('Cleanup') {
-            steps {
-                cleanWs()
-            }
-        }
         stage('Check Node.js') {
             steps {
                 sh '''
