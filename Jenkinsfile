@@ -29,7 +29,7 @@ pipeline {
         stage('Install Chromium') {
             steps {
                 sh '''
-                RUN apt-get update && apt-get install -y chromium && rm -rf /var/lib/apt/lists/*
+                apt-get update && apt-get install -y chromium && rm -rf /var/lib/apt/lists/*
                 '''
             }
         }
