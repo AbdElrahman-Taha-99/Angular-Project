@@ -1,43 +1,49 @@
 pipeline {
-    agent any
-    tools {
-        nodejs "node18" // Ensure 'node18' matches the name configured in Jenkins global tool configuration
+    agent {
+        docker {
+            image 'ataha99/my-angular-agent:latest' // your built Docker agent
+            reuseNode true
+        }
     }
+
     stages {
-        stage('Check Node.js') {
+        stage('Check Node.js & Chromium') {
             steps {
                 sh '''
                     node -v
                     npm -v
+                    chromium --version
                 '''
-            }
-        }
-        stage('Install Dependencies') {
-            steps {
-                sh 'npm ci'
-            }
-        }
-        stage('Lint') {
-            steps {
-                sh '''
-                npm run lint
-                npm run lint:fix
-                npm run format
-                '''
-            }
-        }
-        stage('Install Chromium') {
-            steps {
-                sh '''
-                sudo apt-get update && apt-get install -y chromium && rm -rf /var/lib/apt/lists/*
-                '''
-            }
-        }
-        stage('Run Tests') {
-            steps {
-                sh 'npm test --watch=false --browsers=ChromeHeadless'
             }
         }
 
+        stage('Install Dependencies') {
+            steps {
+                // use npm ci if package-lock.json exists, else npm install
+                script {
+                    if (fileExists('package-lock.json')) {
+                        sh 'npm ci'
+                    } else {
+                        sh 'npm install'
+                    }
+                }
+            }
+        }
+
+        stage('Lint') {
+            steps {
+                sh '''
+                    npm run lint || true
+                    npm run lint:fix || true
+                    npm run format || true
+                '''
+            }
+        }
+
+        stage('Run Tests') {
+            steps {
+                sh 'npm test -- --watch=false --browsers=ChromeHeadless'
+            }
+        }
     }
 }

@@ -1,27 +1,22 @@
-# Start from official Node.js 18 image
-FROM node:20-alpine
+# Use Node 18
+FROM node:18-bullseye-slim
 
-# Install Chromium (headless browser for Angular/Karma tests)
-RUN apk add --no-cache chromium nss freetype freetype-dev harfbuzz ttf-freefont
+# Install Chromium and build tools
+RUN apt-get update && apt-get install -y \
+    chromium \
+    git \
+    curl \
+    bash \
+    g++ \
+    make \
+    && rm -rf /var/lib/apt/lists/*
 
 # Set environment variable so Karma knows where Chromium is
-ENV CHROME_BIN=/usr/bin/chromium-browser
+ENV CHROME_BIN=/usr/bin/chromium
+ENV PUPPETEER_SKIP_DOWNLOAD=true
 
-# Install Angular CLI globally
-RUN npm install -g npm@latest
-RUN npm install -g @angular/cli
+# Install Angular CLI and npm (Node 18 compatible)
+RUN npm install -g npm@10 @angular/cli
 
 # Set working directory
 WORKDIR /usr/src/app
-
-# # Copy only package.json + lock first (better caching)
-# COPY package*.json ./
-
-# # Install dependencies
-# RUN npm ci
-
-# # Copy rest of the app
-# COPY . .
-
-# # Default command (optional, can override in Jenkinsfile)
-# CMD ["npm", "test"]
