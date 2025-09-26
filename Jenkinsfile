@@ -2,7 +2,7 @@ pipeline {
     agent {
         docker {
             image 'ataha99/my-angular-agent:latest'
-            reuseNode true
+            args '-u root'
         }
     }
 
