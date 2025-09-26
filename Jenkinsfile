@@ -1,9 +1,14 @@
 pipeline {
-    agent any
-
-    tools {
-        nodejs "node18" // Ensure 'node18' matches the name configured in Jenkins global tool configuration
+    agent {
+        docker {
+            image 'ataha99/my-angular-agent:latest'
+            reuseNode true
+        }
     }
+
+    // tools {
+    //     nodejs "node18" // Ensure 'node18' matches the name configured in Jenkins global tool configuration
+    // }
 
     stages {
         stage('Check Node.js') {
@@ -30,7 +35,7 @@ pipeline {
         }
         stage('Run Tests') {
             steps {
-                sh 'npm test --watch=false --browsers=ChromeHeadlessCI'
+                sh 'npm test --watch=false --browsers=ChromeHeadless'
             }
         }
 
