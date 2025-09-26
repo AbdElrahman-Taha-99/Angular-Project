@@ -1,20 +1,14 @@
 pipeline {
-    agent {
-        docker {
-            image 'ataha99/my-angular-agent:latest'
-            args '-u root'
-        }
+    agent any
+    tools {
+        nodejs "node18" // Ensure 'node18' matches the name configured in Jenkins global tool configuration
     }
-
     stages {
         stage('Cleanup') {
             steps {
                 cleanWs()
             }
         }
-    // tools {
-    //     nodejs "node18" // Ensure 'node18' matches the name configured in Jenkins global tool configuration
-    // }
         stage('Check Node.js') {
             steps {
                 sh '''
@@ -34,6 +28,13 @@ pipeline {
                 npm run lint
                 npm run lint:fix
                 npm run format
+                '''
+            }
+        }
+        stage('Install Chromium') {
+            steps {
+                sh '''
+                RUN apt-get update && apt-get install -y chromium && rm -rf /var/lib/apt/lists/*
                 '''
             }
         }
