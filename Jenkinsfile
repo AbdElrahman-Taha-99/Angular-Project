@@ -3,6 +3,8 @@ pipeline {
         docker {
             image 'docker.io/ataha99/my-angular-agent:latest' // your built Docker agent
             args '-u root:root' // run as root to avoid permission issues
+            reuseNode true
+            alwaysPull true
         }
     }
 
