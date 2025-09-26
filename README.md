@@ -8,3 +8,4 @@ This project is the result of the tutorial, which are essentials of Angular by w
 ![Screenshot of Web App Demo.](demo1.jpg)
 ![Screenshot of Web App Demo.](demo2.jpg)
 ![Screenshot of Web App Demo.](demo3.jpg)
+------------------------
