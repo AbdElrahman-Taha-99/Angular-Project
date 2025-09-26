@@ -44,7 +44,7 @@ pipeline {
 
         stage('Run Tests') {
             steps {
-                sh 'npm test -- --watch=false --browsers=ChromeHeadless'
+                sh 'npm test -- --watch=false --browsers=ChromeHeadlessNoSandbox'
             }
         }
     }
