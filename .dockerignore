@@ -1,0 +1,33 @@
+# Dependencies
+node_modules
+npm-debug.log
+yarn-error.log
+
+# Build outputs
+dist
+coverage
+
+# System files
+.DS_Store
+Thumbs.db
+
+# Git
+.git
+.gitignore
+.gitattributes
+
+# IDE / Editor
+.vscode
+*.swp
+
+# Docker itself
+Dockerfile
+.dockerignore
+
+# Tests
+karma.conf.cjs
+*.spec.ts
+
+# Images & docs
+*.jpg
+docs
