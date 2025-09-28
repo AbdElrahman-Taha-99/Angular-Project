@@ -59,7 +59,7 @@ pipeline {
                 archiveArtifacts artifacts: 'test-artifacts/**', fingerprint: true
                 
                 sh '''
-                echo "🏳️ Sending test artifacts to Ansible host..."
+                echo "🏳️ Sending test artifacts to Ansible host... "
                 scp -r test-artifacts ansible@34.235.88.160:/tmp/test-artifacts
                 '''
             }
