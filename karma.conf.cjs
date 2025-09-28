@@ -16,29 +16,33 @@ module.exports = function (config) {
       clearContext: false // leave Jasmine Spec Runner output visible in browser
     },
 
+    // ✅ Coverage reports
     coverageReporter: {
       dir: require('path').join(__dirname, './coverage'),
       subdir: '.',
       reporters: [
-        { type: 'html' },
-        { type: 'lcov' },
-        { type: 'text-summary' }
+        { type: 'html' },        // for browsing reports
+        { type: 'lcov' },        // for SonarQube / coverage tools
+        { type: 'text-summary' } // quick summary in console
       ]
     },
 
+    // ✅ JUnit test results
     junitReporter: {
       outputDir: 'reports/unit',      // results will be saved here
       outputFile: 'test-results.xml', // single file
       useBrowserName: false           // don’t append browser name
     },
 
+    // ✅ Reporters to use
     reporters: ['progress', 'kjhtml', 'junit', 'coverage'],
 
     port: 9876,
     colors: true,
     logLevel: config.LOG_INFO,
-    autoWatch: true,
+    autoWatch: false,
 
+    // ✅ Headless Chrome for CI
     browsers: ['ChromeHeadlessNoSandbox'],
     customLaunchers: {
       ChromeHeadlessNoSandbox: {
@@ -47,7 +51,8 @@ module.exports = function (config) {
       }
     },
 
-    singleRun: true, // ✅ for CI, run once and exit
+    // ✅ Run once and exit (good for Jenkins/CI)
+    singleRun: true,
     restartOnFileChange: false
   });
 };
