@@ -32,15 +32,8 @@ pipeline {
             steps {
                 // use npm ci if package-lock.json exists, else npm install
                 echo "📦 Installing npm dependencies..."
-                script {
-                    if (fileExists('package-lock.json')) {
-                        sh 'npm ci'
-                    } else {
-                        sh 'npm install'
-                    }
-                }
-            
                 sh '''
+                npm ci                 
                 echo "💅🏻 Running linting and formatting..."
                 npm run lint || true
                 npm run lint:fix || true
