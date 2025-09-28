@@ -4,7 +4,7 @@ pipeline {
             image 'docker.io/ataha99/my-angular-agent:latest' // your built Docker agent
             // mount jenkins ssh keys 
             // and docker socket to run docker commands inside the agent
-            args '-u root:root -v /var/lib/jenkins/.ssh:/root/.ssh:ro -v /var/run/docker.sock:/var/run/docker.sock -v /usr/bin/docker:/usr/bin/docker'
+            args '-u root:root -v /var/lib/jenkins/.ssh:/root/.ssh:ro -v /var/run/docker.sock:/var/run/docker.sock'
             reuseNode true
             alwaysPull true
         }
