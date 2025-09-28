@@ -63,6 +63,11 @@ pipeline {
                 echo "🏳️ Sending test artifacts to Ansible host..."
                 scp -r test-artifacts ansible@34.235.88.160:/tmp/test-artifacts
                 '''
+
+                sh '''
+                echo "🪣 Uploading test Artifacts to S3 Bucket."
+                ssh ansible@34.235.88.160 "ansible-playbook ~/ansible-playbooks/upload-test-artifacts.yml"
+                '''
             }
         }
     }
