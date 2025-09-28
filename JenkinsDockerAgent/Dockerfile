@@ -10,6 +10,9 @@ RUN apt-get update && apt-get install -y \
     make \
     && rm -rf /var/lib/apt/lists/*
 
+# Install Docker CLI
+RUN curl -fsSL https://get.docker.com | sh
+
 # Env vars for Angular/Karma tests
 ENV CHROME_BIN=/usr/bin/chromium
 ENV PUPPETEER_SKIP_DOWNLOAD=true
