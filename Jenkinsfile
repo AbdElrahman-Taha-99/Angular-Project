@@ -76,6 +76,17 @@ pipeline {
                 '''
             }
         }
+        stage('Push to Registry') {
+            steps {
+                withCredentials([usernamePassword(credentialsId: 'DockerHub', usernameVariable: 'DOCKER_USER', passwordVariable: 'DOCKER_PASS')]) {
+                    sh '''
+                    echo "$DOCKER_PASS" | docker login -u "$DOCKER_USER" --password-stdin
+                    docker push $REGISTRY/$IMAGE_NAME:$VERSION
+                    docker push $REGISTRY/$IMAGE_NAME:latest
+                    '''
+                }
+            }
+        }
     }
 
 }
