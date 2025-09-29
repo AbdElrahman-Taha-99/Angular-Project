@@ -155,16 +155,14 @@ pipeline {
                         ghcr.io/zaproxy/zaproxy:latest \
                         zap-baseline.py -t http://54.157.237.38:8080 -r report.html -m 2
                     '
-                    # Make sure local dir exists
-                    #mkdir -p zap-artifacts
-
-                    #scp ubuntu@3.88.179.247:~/zap-results/report.html ./zap-artifacts || true
-                    scp -r ubuntu@3.88.179.247:~/zap-results ./zap-artifacts || true
                     """
                 }
             }
             post {
                 always {
+                    sh '''
+                    scp -r ubuntu@3.88.179.247:~/zap-results/* ./zap-artifacts/ || true
+                    '''
                     archiveArtifacts artifacts: 'zap-artifacts/**', fingerprint: true
                     sh '''
                     echo "🏳️ Sending security tests artifacts to Ansible host..."
