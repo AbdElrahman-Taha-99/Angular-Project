@@ -153,7 +153,7 @@ pipeline {
                         docker run --rm --network host \
                         -v ~/zap-results:/zap/wrk/:rw \
                         ghcr.io/zaproxy/zaproxy:latest \
-                        zap-baseline.py -t http://localhost:8080 -r report.html -m 2
+                        zap-baseline.py -t http://54.157.237.38:8080 -r report.html -m 2
                     '
                     # Make sure local dir exists
                     #mkdir -p zap-artifacts
