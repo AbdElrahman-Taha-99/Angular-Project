@@ -151,8 +151,12 @@ pipeline {
                     echo "🕷️ Running OWASP ZAP DAST scan on E2E instance..."
                     ssh ubuntu@3.88.179.247 '
                         mkdir -p ~/zap-results &&
-                        ~/zap/zap.sh -cmd -quickurl http://localhost:8080 -quickout ~/zap-results/report.html
+                        # ~/zap/zap.sh -cmd -quickurl http://localhost:8080 -quickout ~/zap-results/report.html
+                        ~/zap/zap-baseline.py -t http://localhost:8080 -r ~/zap-results/report.html -m 2
                     '
+                    # Make sure local dir exists
+                    mkdir -p zap-artifacts
+
                     scp ubuntu@3.88.179.247:~/zap-results/report.html ./zap-artifacts || true
                     """
                 }
