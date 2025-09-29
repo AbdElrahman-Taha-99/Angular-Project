@@ -152,7 +152,7 @@ pipeline {
                     ssh ubuntu@3.88.179.247 '
                         docker run --rm --network host \
                         -v ~/zap-results:/zap/wrk/:rw \
-                        ghcr.io/zaproxy/zaproxy:stable \
+                        ghcr.io/zaproxy/zaproxy:latest \
                         zap-baseline.py -t http://localhost:8080 -r report.html -m 2
                     '
                     # Make sure local dir exists
