@@ -90,7 +90,8 @@ pipeline {
                     npm ci &&
                     xvfb-run -a npx cypress run --browser chromium --reporter junit --reporter-options 'mochaFile=cypress/reports/results-[hash].xml,toConsole=true'
                     echo '🔥 Running k6 performance tests...' &&
-                    k6 run --out json=cypress/performance/results.json performance/performance-test.js
+                    mkdir -p ~/angular-e2e/performance/results &&
+                    k6 run --summary-export=~/angular-e2e/performance/results/results.json ~/angular-e2e/performance/performance-test.js
                     "
                     '''
                 }
@@ -103,7 +104,7 @@ pipeline {
                     // Copy reports back to Jenkins
                     sh '''
                     scp -r ubuntu@3.88.179.247:~/angular-e2e/cypress/reports ./e2e-artifacts || true
-                    scp -r ubuntu@3.88.179.247:~/angular-e2e/cypress/performance ./perf-artifacts || true
+                    scp -r ubuntu@3.88.179.247:~/angular-e2e/performance/results ./perf-artifacts || true
                     '''
 
                     // Archive inside Jenkins
