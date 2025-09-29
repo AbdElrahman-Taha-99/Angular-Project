@@ -91,7 +91,7 @@ pipeline {
                     xvfb-run -a npx cypress run --browser chromium --reporter junit --reporter-options 'mochaFile=cypress/reports/results-[hash].xml,toConsole=true'
                     echo '🔥 Running k6 performance tests...' &&
                     mkdir -p ~/angular-e2e/performance/results &&
-                    k6 run --summary-export=~/angular-e2e/performance/results/results.json ~/angular-e2e/performance/performance-test.js
+                    k6 run --summary-export=performance/results/results.json performance/performance-test.js
                     "
                     '''
                 }
