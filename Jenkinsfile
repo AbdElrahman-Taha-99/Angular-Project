@@ -51,6 +51,16 @@ pipeline {
                 archiveArtifacts artifacts: 'test-artifacts/**', fingerprint: true
             }
         }
+        stage('NPM Audit') {
+            steps {
+                sh '''
+                echo "🔐 Running npm audit..."
+                npm audit --json || true > npm-audit.json
+                '''
+                archiveArtifacts artifacts: 'npm-audit.json', fingerprint: true
+            }
+        }
+
         stage('Build Docker Image') {
             steps {
                 sh '''
@@ -60,6 +70,18 @@ pipeline {
                 '''
             }
         }
+        
+        stage('Trivy Scan') {
+            steps {
+                sh '''
+                echo "🛡️ Running Trivy image scan..."
+                trivy image --exit-code 0 --severity HIGH,CRITICAL --format json \
+                    -o trivy-report.json $REGISTRY/$IMAGE_NAME:$VERSION
+                '''
+                archiveArtifacts artifacts: 'trivy-report.json', fingerprint: true
+            }
+        }
+
         stage('Push to Registry') {
             steps {
                 withCredentials([usernamePassword(credentialsId: 'DockerHub', usernameVariable: 'DOCKER_USER', passwordVariable: 'DOCKER_PASS')]) {
@@ -118,13 +140,40 @@ pipeline {
                     scp -r e2e-artifacts ansible@34.235.88.160:/tmp/e2e-artifacts
                     scp -r perf-artifacts ansible@34.235.88.160:/tmp/perf-artifacts
                     '''
+                }
+            }
+
+        }
+        stage('OWASP ZAP Scan') {
+            steps {
+                script {
+                    sh """
+                    echo "🕷️ Running OWASP ZAP DAST scan on E2E instance..."
+                    ssh ubuntu@3.88.179.247 '
+                        mkdir -p ~/zap-results &&
+                        ~/zap/zap.sh -cmd -quickurl http://localhost:8080 -quickout ~/zap-results/report.html
+                    '
+                    scp ubuntu@3.88.179.247:~/zap-results/report.html ./zap-artifacts || true
+                    """
+                }
+            }
+            post {
+                always {
+                    archiveArtifacts artifacts: 'zap-artifacts/**', fingerprint: true
+                    sh '''
+                    echo "🏳️ Sending security tests artifacts to Ansible host..."
+                    scp npm-audit.json ansible@34.235.88.160:/tmp/npm-audit.json
+                    scp trivy-report.json ansible@34.235.88.160:/tmp/trivy-report.json
+                    scp -r zap-artifacts ansible@34.235.88.160:/tmp/zap-artifacts
+                    '''
+
                     sh '''
                     echo "🪣 Uploading test Artifacts to S3 Bucket."
                     ssh ansible@34.235.88.160 "ansible-playbook ~/ansible-playbooks/upload-test-artifacts.yml"
                     '''
                 }
             }
-
         }
+
     }
 }
