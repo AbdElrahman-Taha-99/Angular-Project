@@ -49,15 +49,6 @@ pipeline {
                 cp -r coverage test-artifacts/ || true
                 '''
                 archiveArtifacts artifacts: 'test-artifacts/**', fingerprint: true
-                
-                // sh '''
-                // echo "🏳️ Sending test artifacts to Ansible host..."
-                // scp -r test-artifacts ansible@34.235.88.160:/tmp/test-artifacts
-                // '''
-                // sh '''
-                // echo "🪣 Uploading test Artifacts to S3 Bucket."
-                // ssh ansible@34.235.88.160 "ansible-playbook ~/ansible-playbooks/upload-test-artifacts.yml"
-                // '''
             }
         }
         stage('Build Docker Image') {
@@ -88,16 +79,18 @@ pipeline {
                 '''
             }
         }
-        stage('Acceptance/E2E Tests') {
+        stage('Acceptance/E2E + Performance Tests') {
             steps {
                 script {
                     sh '''
-                    echo "🧪 Running E2E tests on AWS Test EC2..."
+                    echo "🧪 Running Cypress + k6 tests on AWS Test EC2..."
                     ssh ubuntu@3.88.179.247 "
                     cd ~/angular-e2e &&
                     git pull &&
                     npm ci &&
                     xvfb-run -a npx cypress run --browser chromium --reporter junit --reporter-options 'mochaFile=cypress/reports/results-[hash].xml,toConsole=true'
+                    echo '🔥 Running k6 performance tests...' &&
+                    k6 run --out json=cypress/performance/results.json performance/performance-test.js
                     "
                     '''
                 }
@@ -110,25 +103,24 @@ pipeline {
                     // Copy reports back to Jenkins
                     sh '''
                     scp -r ubuntu@3.88.179.247:~/angular-e2e/cypress/reports ./e2e-artifacts || true
+                    scp -r ubuntu@3.88.179.247:~/angular-e2e/cypress/performance ./perf-artifacts || true
                     '''
 
                     // Archive inside Jenkins
                     archiveArtifacts artifacts: 'e2e-artifacts/**', fingerprint: true
+                    archiveArtifacts artifacts: 'perf-artifacts/**', fingerprint: true
 
                     // Upload to S3 (same bucket as unit tests or another one)
                     sh '''
                     echo "🏳️ Sending test artifacts to Ansible host..."
                     scp -r test-artifacts ansible@34.235.88.160:/tmp/test-artifacts
                     scp -r e2e-artifacts ansible@34.235.88.160:/tmp/e2e-artifacts
+                    scp -r perf-artifacts ansible@34.235.88.160:/tmp/perf-artifacts
                     '''
                     sh '''
                     echo "🪣 Uploading test Artifacts to S3 Bucket."
                     ssh ansible@34.235.88.160 "ansible-playbook ~/ansible-playbooks/upload-test-artifacts.yml"
                     '''
-                    // sh '''
-                    // echo "☁️ Uploading E2E artifacts to S3..."
-                    // aws s3 cp ./e2e-artifacts s3://<YOUR_BUCKET_NAME>/e2e-reports/ --recursive --only-show-errors
-                    // '''
                 }
             }
 
