@@ -80,6 +80,14 @@ pipeline {
                 }
             }
         }
+        stage('Deploy to EC2') {
+            steps {
+                sh '''
+                echo "🚀 Triggering Ansible deployment..."
+                ssh ansible@34.235.88.160 "ansible-playbook ~/ansible-playbooks/deploy-angular.yml -i ~/ansible-playbooks/inventory.ini"
+                '''
+            }
+        }
     }
 
 }
