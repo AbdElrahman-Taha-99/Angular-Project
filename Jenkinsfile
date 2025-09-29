@@ -168,7 +168,8 @@ pipeline {
                     echo "🏳️ Sending security tests artifacts to Ansible host..."
                     scp npm-audit.json ansible@34.235.88.160:/tmp/npm-audit.json
                     scp trivy-report.json ansible@34.235.88.160:/tmp/trivy-report.json
-                    scp -r zap-artifacts ansible@34.235.88.160:/tmp/zap-artifacts
+                    ssh ansible@34.235.88.160 "mkdir -p /tmp/zap-artifacts"
+                    scp -r zap-artifacts/* ansible@34.235.88.160:/tmp/zap-artifacts/
                     '''
 
                     sh '''
