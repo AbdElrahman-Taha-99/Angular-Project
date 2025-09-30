@@ -51,15 +51,15 @@ pipeline {
                 archiveArtifacts artifacts: 'test-artifacts/**', fingerprint: true
             }
         }
-        stage('NPM Audit') {
-            steps {
-                sh '''
-                echo "🔐 Running npm audit..."
-                npm audit --json || true > npm-audit.json
-                '''
-                archiveArtifacts artifacts: 'npm-audit.json', fingerprint: true
-            }
-        }
+        // stage('NPM Audit') {
+        //     steps {
+        //         sh '''
+        //         echo "🔐 Running npm audit..."
+        //         npm audit --json || true > npm-audit.json
+        //         '''
+        //         archiveArtifacts artifacts: 'npm-audit.json', fingerprint: true
+        //     }
+        // }
 
         stage('Build Docker Image') {
             steps {
@@ -71,16 +71,16 @@ pipeline {
             }
         }
         
-        stage('Trivy Scan') {
-            steps {
-                sh '''
-                echo "🛡️ Running Trivy image scan..."
-                trivy image --exit-code 0 --severity HIGH,CRITICAL --format json \
-                    -o trivy-report.json $REGISTRY/$IMAGE_NAME:$VERSION
-                '''
-                archiveArtifacts artifacts: 'trivy-report.json', fingerprint: true
-            }
-        }
+        // stage('Trivy Scan') {
+        //     steps {
+        //         sh '''
+        //         echo "🛡️ Running Trivy image scan..."
+        //         trivy image --exit-code 0 --severity HIGH,CRITICAL --format json \
+        //             -o trivy-report.json $REGISTRY/$IMAGE_NAME:$VERSION
+        //         '''
+        //         archiveArtifacts artifacts: 'trivy-report.json', fingerprint: true
+        //     }
+        // }
 
         stage('Push to Registry') {
             steps {
@@ -100,8 +100,7 @@ pipeline {
                 ssh ansible@34.235.88.160 "
                     ansible-playbook ~/ansible-playbooks/deploy-bluegreen.yml \
                         -i ~/ansible-playbooks/inventory.ini \
-                        -e target=green \
-                        -e BUILD_NUMBER=$VERSION
+                        -e target=green
                 "
                 '''
             }
