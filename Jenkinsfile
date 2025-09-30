@@ -151,7 +151,7 @@ pipeline {
                     echo "🕷️ Running OWASP ZAP DAST scan on E2E instance..."
                     ssh ubuntu@3.88.179.247 '
                         docker run --rm --network host \
-                        -v ~/zap-results:/zap/wrk/:rw \
+                        -v /home/ubuntu/zap-results:/zap/wrk/:rw \
                         ghcr.io/zaproxy/zaproxy:latest \
                         zap-baseline.py -t http://54.157.237.38:8080 -r report.html -m 2
                     '
@@ -161,7 +161,7 @@ pipeline {
             post {
                 always {
                     sh '''
-                    scp -r ubuntu@3.88.179.247:~/zap-results/* ./zap-artifacts/ || true
+                    scp -r ubuntu@3.88.179.247:/home/ubuntu/zap-results ./zap-artifacts || true
                     '''
                     archiveArtifacts artifacts: 'zap-artifacts/**', fingerprint: true
                     sh '''
@@ -169,7 +169,7 @@ pipeline {
                     scp npm-audit.json ansible@34.235.88.160:/tmp/npm-audit.json
                     scp trivy-report.json ansible@34.235.88.160:/tmp/trivy-report.json
                     ssh ansible@34.235.88.160 "rm -rf /tmp/zap-artifacts && mkdir -p /tmp/zap-artifacts"
-                    scp -r zap-artifacts/* ansible@34.235.88.160:/tmp/zap-artifacts/
+                    scp -r zap-artifacts ansible@34.235.88.160:/tmp/zap-artifacts
                     '''
 
                     sh '''
