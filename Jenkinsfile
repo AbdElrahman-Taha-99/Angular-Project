@@ -153,16 +153,19 @@ pipeline {
                         docker run --rm --network host \
                         -v /home/ubuntu/zap-results:/zap/wrk/:rw \
                         ghcr.io/zaproxy/zaproxy:latest \
-                        zap-baseline.py -t http://54.157.237.38:8080 -r report.html -m 2
+                        zap-baseline.py -t http://54.157.237.38:8080 -r report.html -I
                     '
                     """
                 }
             }
             post {
                 always {
-                    sh '''
-                    scp -r ubuntu@3.88.179.247:/home/ubuntu/zap-results ./zap-artifacts || true
+                   sh '''
+                    echo "📤 Collecting ZAP scan results..."
+                    mkdir -p zap-artifacts
+                    ssh ubuntu@3.88.179.247 "cd /home/ubuntu/zap-results && tar czf - ." | tar xzf - -C zap-artifacts/ || true
                     '''
+            
                     archiveArtifacts artifacts: 'zap-artifacts/**', fingerprint: true
                     sh '''
                     echo "🏳️ Sending security tests artifacts to Ansible host..."
