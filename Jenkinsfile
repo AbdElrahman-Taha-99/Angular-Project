@@ -97,7 +97,12 @@ pipeline {
             steps {
                 sh '''
                 echo "🚀 Triggering Ansible deployment..."
-                ssh ansible@34.235.88.160 "ansible-playbook ~/ansible-playbooks/deploy-angular.yml -i ~/ansible-playbooks/inventory.ini"
+                ssh ansible@34.235.88.160 '
+                    ansible-playbook ~/ansible-playbooks/deploy-bluegreen.yml \
+                        -i ~/ansible-playbooks/inventory.ini \
+                        -e target=green \
+                        -e BUILD_NUMBER=${VERSION}
+        '
                 '''
             }
         }
