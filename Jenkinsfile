@@ -101,7 +101,7 @@ pipeline {
                     ansible-playbook ~/ansible-playbooks/deploy-bluegreen.yml \
                         -i ~/ansible-playbooks/inventory.ini \
                         -e target=green \
-                        -e BUILD_NUMBER=${VERSION}
+                        -e BUILD_NUMBER=$VERSION
         '
                 '''
             }
