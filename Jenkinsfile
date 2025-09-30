@@ -157,7 +157,7 @@ pipeline {
         //                 docker run --rm --network host \
         //                 -v /home/ubuntu/zap-results:/zap/wrk/:rw \
         //                 ghcr.io/zaproxy/zaproxy:latest \
-        //                 zap-baseline.py -t http://54.157.237.38:8080 -r report.html -I
+        //                 zap-baseline.py -t http://54.157.237.38 -r report.html -I
         //             '
         //             """
         //         }
