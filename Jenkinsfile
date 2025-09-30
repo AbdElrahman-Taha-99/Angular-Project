@@ -162,8 +162,9 @@ pipeline {
                 always {
                    sh '''
                     echo "📤 Collecting ZAP scan results..."
+                    rm -rf zap-artifacts
                     mkdir -p zap-artifacts
-                    ssh ubuntu@3.88.179.247 "cd /home/ubuntu/zap-results && tar czf - ." | tar xzf - -C zap-artifacts/ || true
+                    scp -r ubuntu@3.88.179.247:/home/ubuntu/zap-results/* zap-artifacts/
                     '''
             
                     archiveArtifacts artifacts: 'zap-artifacts/**', fingerprint: true
@@ -172,7 +173,7 @@ pipeline {
                     scp npm-audit.json ansible@34.235.88.160:/tmp/npm-audit.json
                     scp trivy-report.json ansible@34.235.88.160:/tmp/trivy-report.json
                     ssh ansible@34.235.88.160 "rm -rf /tmp/zap-artifacts && mkdir -p /tmp/zap-artifacts"
-                    scp -r zap-artifacts ansible@34.235.88.160:/tmp/zap-artifacts
+                    scp -r zap-artifacts/* ansible@34.235.88.160:/tmp/zap-artifacts/
                     '''
 
                     sh '''
