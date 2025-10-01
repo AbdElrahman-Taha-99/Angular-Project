@@ -100,7 +100,7 @@ pipeline {
                 ssh ansible@34.235.88.160 "
                     ansible-playbook ~/ansible-playbooks/deploy-bluegreen.yml \
                         -i ~/ansible-playbooks/inventory.ini \
-                        -e target=green
+                        -e target=blue
                 "
                 '''
             }
