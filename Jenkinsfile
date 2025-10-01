@@ -2,8 +2,6 @@ pipeline {
     agent {
         docker {
             image 'docker.io/ataha99/my-angular-agent:latest' // your built Docker agent
-            // mount jenkins ssh keys 
-            // and docker socket to run docker commands inside the agent
             args '-u root:root -v /var/lib/jenkins/.ssh:/root/.ssh:ro -v /var/run/docker.sock:/var/run/docker.sock'
             reuseNode true
             alwaysPull true
@@ -100,7 +98,7 @@ pipeline {
                 ssh ansible@34.235.88.160 "
                     ansible-playbook ~/ansible-playbooks/deploy-bluegreen.yml \
                         -i ~/ansible-playbooks/inventory.ini \
-                        -e target=blue
+                        -e target=green
                 "
                 '''
             }
