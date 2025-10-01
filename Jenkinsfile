@@ -51,15 +51,15 @@ pipeline {
                 archiveArtifacts artifacts: 'test-artifacts/**', fingerprint: true
             }
         }
-        // stage('NPM Audit') {
-        //     steps {
-        //         sh '''
-        //         echo "🔐 Running npm audit..."
-        //         npm audit --json || true > npm-audit.json
-        //         '''
-        //         archiveArtifacts artifacts: 'npm-audit.json', fingerprint: true
-        //     }
-        // }
+        stage('NPM Audit') {
+            steps {
+                sh '''
+                echo "🔐 Running npm audit..."
+                npm audit --json || true > npm-audit.json
+                '''
+                archiveArtifacts artifacts: 'npm-audit.json', fingerprint: true
+            }
+        }
 
         stage('Build Docker Image') {
             steps {
@@ -71,16 +71,16 @@ pipeline {
             }
         }
         
-        // stage('Trivy Scan') {
-        //     steps {
-        //         sh '''
-        //         echo "🛡️ Running Trivy image scan..."
-        //         trivy image --exit-code 0 --severity HIGH,CRITICAL --format json \
-        //             -o trivy-report.json $REGISTRY/$IMAGE_NAME:$VERSION
-        //         '''
-        //         archiveArtifacts artifacts: 'trivy-report.json', fingerprint: true
-        //     }
-        // }
+        stage('Trivy Scan') {
+            steps {
+                sh '''
+                echo "🛡️ Running Trivy image scan..."
+                trivy image --exit-code 0 --severity HIGH,CRITICAL --format json \
+                    -o trivy-report.json $REGISTRY/$IMAGE_NAME:$VERSION
+                '''
+                archiveArtifacts artifacts: 'trivy-report.json', fingerprint: true
+            }
+        }
 
         stage('Push to Registry') {
             steps {
@@ -105,88 +105,88 @@ pipeline {
                 '''
             }
         }
-        // stage('Acceptance/E2E + Performance Tests') {
-        //     steps {
-        //         script {
-        //             sh '''
-        //             echo "🧪 Running Cypress + k6 tests on AWS Test EC2..."
-        //             ssh ubuntu@3.88.179.247 "
-        //             cd ~/angular-e2e &&
-        //             git pull &&
-        //             npm ci &&
-        //             xvfb-run -a npx cypress run --browser chromium --reporter junit --reporter-options 'mochaFile=cypress/reports/results-[hash].xml,toConsole=true'
-        //             echo '🔥 Running k6 performance tests...' &&
-        //             mkdir -p ~/angular-e2e/performance/results &&
-        //             k6 run --summary-export=performance/results/results.json performance/performance-test.js
-        //             "
-        //             '''
-        //         }
+        stage('Acceptance/E2E + Performance Tests') {
+            steps {
+                script {
+                    sh '''
+                    echo "🧪 Running Cypress + k6 tests on AWS Test EC2..."
+                    ssh ubuntu@3.88.179.247 "
+                    cd ~/angular-e2e &&
+                    git pull &&
+                    npm ci &&
+                    xvfb-run -a npx cypress run --browser chromium --reporter junit --reporter-options 'mochaFile=cypress/reports/results-[hash].xml,toConsole=true'
+                    echo '🔥 Running k6 performance tests...' &&
+                    mkdir -p ~/angular-e2e/performance/results &&
+                    k6 run --summary-export=performance/results/results.json performance/performance-test.js
+                    "
+                    '''
+                }
    
-        //     }
-        //     post {
-        //         always {
-        //             echo "📤 Archiving E2E test results..."
+            }
+            post {
+                always {
+                    echo "📤 Archiving E2E test results..."
 
-        //             // Copy reports back to Jenkins
-        //             sh '''
-        //             scp -r ubuntu@3.88.179.247:~/angular-e2e/cypress/reports ./e2e-artifacts || true
-        //             scp -r ubuntu@3.88.179.247:~/angular-e2e/performance/results ./perf-artifacts || true
-        //             '''
+                    // Copy reports back to Jenkins
+                    sh '''
+                    scp -r ubuntu@3.88.179.247:~/angular-e2e/cypress/reports ./e2e-artifacts || true
+                    scp -r ubuntu@3.88.179.247:~/angular-e2e/performance/results ./perf-artifacts || true
+                    '''
 
-        //             // Archive inside Jenkins
-        //             archiveArtifacts artifacts: 'e2e-artifacts/**', fingerprint: true
-        //             archiveArtifacts artifacts: 'perf-artifacts/**', fingerprint: true
+                    // Archive inside Jenkins
+                    archiveArtifacts artifacts: 'e2e-artifacts/**', fingerprint: true
+                    archiveArtifacts artifacts: 'perf-artifacts/**', fingerprint: true
 
-        //             // Upload to S3 (same bucket as unit tests or another one)
-        //             sh '''
-        //             echo "🏳️ Sending test artifacts to Ansible host..."
-        //             scp -r test-artifacts ansible@34.235.88.160:/tmp/test-artifacts
-        //             scp -r e2e-artifacts ansible@34.235.88.160:/tmp/e2e-artifacts
-        //             scp -r perf-artifacts ansible@34.235.88.160:/tmp/perf-artifacts
-        //             '''
-        //         }
-        //     }
+                    // Upload to S3 (same bucket as unit tests or another one)
+                    sh '''
+                    echo "🏳️ Sending test artifacts to Ansible host..."
+                    scp -r test-artifacts ansible@34.235.88.160:/tmp/test-artifacts
+                    scp -r e2e-artifacts ansible@34.235.88.160:/tmp/e2e-artifacts
+                    scp -r perf-artifacts ansible@34.235.88.160:/tmp/perf-artifacts
+                    '''
+                }
+            }
 
-        // }
-        // stage('OWASP ZAP Scan') {
-        //     steps {
-        //         script {
-        //             sh """
-        //             echo "🕷️ Running OWASP ZAP DAST scan on E2E instance..."
-        //             ssh ubuntu@3.88.179.247 '
-        //                 docker run --rm --network host \
-        //                 -v /home/ubuntu/zap-results:/zap/wrk/:rw \
-        //                 ghcr.io/zaproxy/zaproxy:latest \
-        //                 zap-baseline.py -t http://54.157.237.38 -r report.html -I
-        //             '
-        //             """
-        //         }
-        //     }
-        //     post {
-        //         always {
-        //            sh '''
-        //             echo "📤 Collecting ZAP scan results..."
-        //             rm -rf zap-artifacts
-        //             mkdir -p zap-artifacts
-        //             scp -r ubuntu@3.88.179.247:/home/ubuntu/zap-results/* zap-artifacts/
-        //             '''
+        }
+        stage('OWASP ZAP Scan') {
+            steps {
+                script {
+                    sh """
+                    echo "🕷️ Running OWASP ZAP DAST scan on E2E instance..."
+                    ssh ubuntu@3.88.179.247 '
+                        docker run --rm --network host \
+                        -v /home/ubuntu/zap-results:/zap/wrk/:rw \
+                        ghcr.io/zaproxy/zaproxy:latest \
+                        zap-baseline.py -t http://54.157.237.38 -r report.html -I
+                    '
+                    """
+                }
+            }
+            post {
+                always {
+                   sh '''
+                    echo "📤 Collecting ZAP scan results..."
+                    rm -rf zap-artifacts
+                    mkdir -p zap-artifacts
+                    scp -r ubuntu@3.88.179.247:/home/ubuntu/zap-results/* zap-artifacts/
+                    '''
             
-        //             archiveArtifacts artifacts: 'zap-artifacts/**', fingerprint: true
-        //             sh '''
-        //             echo "🏳️ Sending security tests artifacts to Ansible host..."
-        //             scp npm-audit.json ansible@34.235.88.160:/tmp/npm-audit.json
-        //             scp trivy-report.json ansible@34.235.88.160:/tmp/trivy-report.json
-        //             ssh ansible@34.235.88.160 "rm -rf /tmp/zap-artifacts && mkdir -p /tmp/zap-artifacts"
-        //             scp -r zap-artifacts/* ansible@34.235.88.160:/tmp/zap-artifacts/
-        //             '''
+                    archiveArtifacts artifacts: 'zap-artifacts/**', fingerprint: true
+                    sh '''
+                    echo "🏳️ Sending security tests artifacts to Ansible host..."
+                    scp npm-audit.json ansible@34.235.88.160:/tmp/npm-audit.json
+                    scp trivy-report.json ansible@34.235.88.160:/tmp/trivy-report.json
+                    ssh ansible@34.235.88.160 "rm -rf /tmp/zap-artifacts && mkdir -p /tmp/zap-artifacts"
+                    scp -r zap-artifacts/* ansible@34.235.88.160:/tmp/zap-artifacts/
+                    '''
 
-        //             sh '''
-        //             echo "🪣 Uploading test Artifacts to S3 Bucket."
-        //             ssh ansible@34.235.88.160 "ansible-playbook ~/ansible-playbooks/upload-test-artifacts.yml"
-        //             '''
-        //         }
-        //     }
-        // }
+                    sh '''
+                    echo "🪣 Uploading test Artifacts to S3 Bucket."
+                    ssh ansible@34.235.88.160 "ansible-playbook ~/ansible-playbooks/upload-test-artifacts.yml"
+                    '''
+                }
+            }
+        }
 
     }
 }
