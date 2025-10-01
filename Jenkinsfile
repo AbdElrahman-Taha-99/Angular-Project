@@ -15,7 +15,7 @@ pipeline {
     }
 
     stages {
-        stage('Check Node.js & Chromium') 
+        stage('Check Node.js & Chromium') {
             steps {
                 sh '''
                     echo "🔎 Checking Node.js, npm, and Chromium versions..."
