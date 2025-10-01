@@ -1,0 +1,65 @@
+- name: Upload test artifacts to S3
+  hosts: localhost
+  tasks:
+    - name: Check if AWS CLI is already installed
+      command: aws --version
+      register: awscli_check
+      changed_when: false
+      ignore_errors: yes
+
+    - name: Upload unit test artifacts to S3
+      ansible.builtin.command: >
+        aws s3 cp /tmp/test-artifacts s3://angular-artifacts-bucket-9918/tests/ --recursive
+
+    - name: Remove artifacts after upload
+      ansible.builtin.file:
+        path: /tmp/test-artifacts
+        state: absent
+
+    - name: Upload e2e test artifacts to S3
+      ansible.builtin.command: >
+        aws s3 cp /tmp/e2e-artifacts s3://angular-artifacts-bucket-9918/e2e-tests/ --recursive
+
+    - name: Remove artifacts after upload
+      ansible.builtin.file:
+        path: /tmp/e2e-artifacts
+        state: absent
+
+    - name: Upload performance test artifacts to S3
+      ansible.builtin.command: >
+        aws s3 cp /tmp/perf-artifacts s3://angular-artifacts-bucket-9918/perf-tests/ --recursive
+
+    - name: Remove artifacts after upload
+      ansible.builtin.file:
+        path: /tmp/perf-artifacts
+        state: absent
+
+    - name: Upload npm audit security test artifacts to S3
+      ansible.builtin.command: >
+        aws s3 cp /tmp/npm-audit.json s3://angular-artifacts-bucket-9918/npm-audit/
+
+    - name: Remove artifacts after upload
+      ansible.builtin.file:
+        path: /tmp/npm-audit.json
+        state: absent
+
+    - name: Upload trivy security test artifacts to S3
+      ansible.builtin.command: >
+        aws s3 cp /tmp/trivy-report.json s3://angular-artifacts-bucket-9918/trivy-report/
+
+    - name: Remove artifacts after upload
+      ansible.builtin.file:
+        path: /tmp/trivy-report.json
+        state: absent
+
+    - name: List zap-artifacts on Ansible host
+      command: ls -R /tmp/zap-artifacts
+
+    - name: Upload zap security test artifacts to S3
+      ansible.builtin.command: >
+        aws s3 cp /tmp/zap-artifacts s3://angular-artifacts-bucket-9918/zap-artifacts/ --recursive
+
+    - name: Remove artifacts after upload
+      ansible.builtin.file:
+        path: /tmp/zap-artifacts
+        state: absent

@@ -1,0 +1,91 @@
+---
+- name: Install Jenkins on Ubuntu
+  hosts: jenkins_hosts
+  become: true
+
+  tasks:
+    - name: Update apt cache
+      ansible.builtin.apt:
+        update_cache: yes
+
+    - name: Install required packages
+      ansible.builtin.apt:
+        name:
+          - openjdk-17-jdk
+          - curl
+          - gnupg
+        state: present
+
+    - name: Add Jenkins GPG key
+      ansible.builtin.get_url:
+        url: https://pkg.jenkins.io/debian/jenkins.io-2023.key
+        dest: /usr/share/keyrings/jenkins-keyring.asc
+        mode: '0644'
+
+    - name: Add Jenkins repository
+      ansible.builtin.apt_repository:
+        repo: "deb [signed-by=/usr/share/keyrings/jenkins-keyring.asc] https://pkg.jenkins.io/debian binary/"
+        state: present
+        filename: jenkins
+
+    - name: Update apt cache after adding Jenkins repo
+      ansible.builtin.apt:
+        update_cache: yes
+
+    - name: Install Jenkins
+      ansible.builtin.apt:
+        name: jenkins
+        state: present
+
+    - name: Ensure Jenkins is started and enabled
+      ansible.builtin.service:
+        name: jenkins
+        state: started
+        enabled: yes
+
+    - name: Install dependencies for Docker
+      ansible.builtin.apt:
+        name:
+          - apt-transport-https
+          - ca-certificates
+          - curl
+          - software-properties-common
+          - gnupg
+        state: present
+        update_cache: yes
+
+    - name: Add Docker GPG key
+      ansible.builtin.get_url:
+        url: https://download.docker.com/linux/ubuntu/gpg
+        dest: /usr/share/keyrings/docker-archive-keyring.asc
+        mode: '0644'
+
+    - name: Add Docker repository
+      ansible.builtin.apt_repository:
+        repo: "deb [signed-by=/usr/share/keyrings/docker-archive-keyring.asc] https://download.docker.com/linux/ubuntu {{ ansible_distribution_release }} stable"
+        state: present
+        filename: docker
+
+    - name: Update apt cache after adding Docker repo
+      ansible.builtin.apt:
+        update_cache: yes
+
+    - name: Install Docker
+      ansible.builtin.apt:
+        name:
+          - docker-ce
+          - docker-ce-cli
+          - containerd.io
+        state: present
+
+    - name: Ensure Docker service is running and enabled
+      ansible.builtin.service:
+        name: docker
+        state: started
+        enabled: yes
+
+    - name: Add Jenkins user to Docker group
+      ansible.builtin.user:
+        name: jenkins
+        groups: docker
+        append: yes

@@ -1,0 +1,76 @@
+---
+- name: Blue/Green deploy
+  hosts: deployment
+  become: yes
+  vars:
+    registry: "docker.io/ataha99"
+    image_name: "angular-app"
+    version: "latest"   # always deploy latest pushed image
+    target: "{{ target | default('green') }}"
+    ports: { blue: 8081, green: 8082 }
+    app_port: "{{ ports[target] }}"
+    container_name: "angular-app-{{ target }}"
+    other_name: "{{ 'angular-app-blue' if target == 'green' else 'angular-app-green' }}"
+    nginx_upstream_file: "/etc/nginx/conf.d/active_upstream.conf"
+
+  tasks:
+    - name: Pull latest image
+      community.docker.docker_image:
+        name: "{{ registry }}/{{ image_name }}:{{ version }}"
+        source: pull
+
+    - name: Stop & remove old target container (if exists)
+      community.docker.docker_container:
+        name: "{{ container_name }}"
+        state: absent
+        force_kill: true
+      ignore_errors: yes
+
+    - name: Debug variables
+      debug:
+        msg: "Image will be: {{ registry }}/{{ image_name }}:{{ version }}"
+
+    - name: Run new target container on target port
+      community.docker.docker_container:
+        name: "{{ container_name }}"
+        image: "{{ registry }}/{{ image_name }}:{{ version }}"
+        state: started
+        restart_policy: always
+        ports:
+          - "{{ app_port }}:80"
+        env:
+          NODE_ENV: production
+
+    - name: Wait for app health endpoint on the target container
+      uri:
+        url: "http://127.0.0.1:{{ app_port }}/"
+        status_code: 200
+        timeout: 5
+      register: ht
+      retries: 6
+      delay: 3
+      until: ht.status == 200
+
+    - name: Write active upstream file for nginx (point to target)
+      copy:
+        dest: "{{ nginx_upstream_file }}"
+        content: |
+          upstream active_backend {
+              server 127.0.0.1:{{ app_port }};
+          }
+        owner: root
+        group: root
+        mode: '0644'
+      notify: reload nginx
+
+    - name: Remove old container (optional)
+      community.docker.docker_container:
+        name: "{{ other_name }}"
+        state: absent
+        force_kill: true
+      when: keep_old is not defined
+
+  handlers:
+    - name: reload nginx
+      become: yes
+      ansible.builtin.shell: nginx -t && nginx -s reload
